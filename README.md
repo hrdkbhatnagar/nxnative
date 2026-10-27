@@ -205,7 +205,7 @@ The IPA appears in the same folder (here `~/Games/MarioWonder/SMBWMobile.ipa`). 
 
 **4. Install** the IPA with your sideloading tool (AltStore, Sideloadly, LiveContainer, …). The app gets the game's name, icon and version (the update's version, for example 1.2.1 for Mario Wonder; the base game's when there is no update). Sign it with the **Increased Memory Limit** capability (`com.apple.developer.kernel.increased-memory-limit`) if your tool can: without it iOS gives the app about 3.4 GB and closes the bigger games (Hyrule Warriors: Age of Calamity and Hades II use more, Breath of the Wild and Cuphead come close); with it a recent iPhone gives about 6 GB.
 
-To play on a Mac with Apple silicon instead, `--platform mac-app` packs a Mac app of the game that you open from Finder ([A Mac app](docs/development.md#a-mac-app)).
+To play on a Mac with Apple silicon instead, `--platform mac-app` packs a Mac app of the game that you open from Finder. It appears in the NSP folder as `<game name>.app`; `-o "/Applications/<game name>.app"` puts it elsewhere ([On the Mac](#on-the-mac), [A Mac app](docs/development.md#a-mac-app)).
 
 With an Apple developer account you can instead build and install from Xcode: `--prepare-xcode` makes an Xcode project for the game rather than an IPA ([Build and run on a device with Xcode](docs/development.md#build-and-run-on-a-device-with-xcode)).
 
@@ -221,11 +221,20 @@ A connected game controller hides the touch controls and keeps every button.
 **Shaking.** Shake the iPhone to shake the controller, in games that read its motion: Super Mario Odyssey's motion moves (such as the cap throw on a shake) need it, and Odyssey only takes them in its default docked mode. A light bump does not count; a sharp flick of the phone does.
 
 - **Game language** is English by default. Pick another when packing with `--language` (`-l`), by code or by name: `-l ja`, `-l zh-Hans`, `-l French` (`LANGUAGE` in Spyder). It must be one the game has; the script prints the game's languages and stops on one it lacks. To change it without rebuilding, pick another on the settings screen.
-- **On the Mac**, a game's app starts with the settings it was tested with. To choose others before it starts (frame rate, console mode, upscaling, …), start it from [NX2Apple](https://github.com/LNPANDY/NX2Apple)'s library, or put lines like `DM_FPS_TARGET=30` in `~/Library/Application Support/nxnative/<title ID>/env.txt`. Its log is `~/Library/Logs/nxnative/<title ID>.log`.
 - **Saves and logs** are in the Files app, under the app's name: `save/` and `log.txt`. When something goes wrong, send `log.txt` (the previous run is `log.prev.txt`).
 - **Short stutters** the first time a new scene appears are normal: the app compiles graphics for it once and remembers them for the next launch. What it remembered, and what the game's list names, is built before the game starts, behind "Preparing shaders" and a progress bar when that takes more than half a second.
 - **Reinstalling:** some sideloading tools give a reinstalled app a new data folder. Copy `save/` and `pso_user.tsv` over from the old one to keep your progress.
 - **Settings in a file:** lines like `DM_OPMODE=0` (handheld mode: lower resolution, higher frame rate) in `Documents/env.txt` win over the settings screen, which then shows them greyed out. `DM_FPS_TARGET=30` keeps Breath of the Wild, Tears of the Kingdom, Octopath Traveler 0 and Octopath Traveler II at their original 30 fps, which saves battery; `DM_PRESENT_INTERVAL=game` does the same for Monster Train 2. `DM_SHOW_FPS=1` shows the frame rate at the top left (`--show-fps` when packing turns it on from the start). `DM_LAUNCHER=0` skips the settings screen.
+
+### On the Mac
+
+The Mac app keeps everything of yours outside the app, so building it again after a `git pull` replaces only the game and keeps your progress.
+
+- **Where things are:** `~/Library/Application Support/nxnative/<title ID>/` holds the save (`save/` and `pso_user.tsv`) and your `env.txt`. The log is `~/Library/Logs/nxnative/<title ID>.log`, and the previous run's is `<title ID>.prev.log`. The title ID is the base game's: the script's first line names it (`game profile: 0100F2C0115B6000` for Tears of the Kingdom), and the [per-game notes](dm/games/README.md#games) list each one.
+- **Settings:** the app has no settings screen and starts with the settings the game was tested with. To choose others, start it from [NX2Apple](https://github.com/LNPANDY/NX2Apple)'s library, or put `KEY=VALUE` lines in that `env.txt` and start the app again. For example: `DM_FPS_TARGET=30`, `DM_RENDER_SCALE=0.75` (50 to 100 % of the full picture), `DM_OPMODE=0` (handheld mode), `DM_PRESENT_UPSCALE=metalfx` (sharper in a large window or on a 4K screen), `DM_METAL_HUD=1` (Apple's overlay with the frame rate and frame times), `DM_FULLSCREEN=1` (start in fullscreen). Every variable: [Settings in a file](docs/settings.md#settings-in-a-file).
+- **Fullscreen** (the green button or ⌃⌘F) gives the most even frames on a 144 or 165 Hz screen: the app runs the screen at 120 Hz, a multiple of 60, until the window leaves fullscreen. In a window on such a screen, frames are shown at uneven intervals.
+- **Keyboard:** WASD is the left stick, the arrow keys the D-pad, J K U I are A B X Y, Q E are L R, Z C are ZL ZR, F G press the sticks, Return is + and Tab is −. Space shakes the controller, and the left mouse button touches the screen. ⌘Q quits.
+- **Controllers:** buttons go by position, as on the iPhone (right A, bottom B, top X, left Y). Each controller is a player of its own for local co-op: the first one connected is player 1, together with the keyboard.
 
 ## Known issues
 
