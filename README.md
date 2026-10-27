@@ -1,11 +1,11 @@
 # nxnative
 
-Play your own Nintendo Switch games natively on iPhone and iPad. Bring your game (its NSP files) and your `prod.keys`; one script turns them into an IPA that you sideload.
+Play your own Nintendo Switch games natively on iPhone, iPad and Mac. Bring your game (its NSP files) and your `prod.keys`; one script turns them into an IPA that you sideload, or into a Mac app for a Mac with Apple silicon.
 
 It is not an emulator: the game's own code runs directly on the Apple chip, with Switch graphics rebuilt on Metal. Nothing from any game is in this repository, and the project is not affiliated with Nintendo or any game publisher.
 
 > [!TIP]
-> **Prefer an app to the command line?** [NX2Apple](https://github.com/LNPANDY/NX2Apple) is a community Mac app that builds your games for the iPhone, iPad or Mac, keeps the Mac games in a library and starts them with their settings. It is a separate project that follows this one; this page describes nxnative's own command-line way. Building a front end of your own: [Front ends](docs/frontends.md).
+> **Prefer an app to the command line?** [NX2Apple](https://github.com/LNPANDY/NX2Apple) is a community Mac app that builds your games for the iPhone, iPad or Mac, keeps the Mac games in a library and starts them with their settings. It is a separate project that keeps up with this one; this page describes nxnative's own command-line way. Building a front end of your own: [Front ends](docs/frontends.md).
 
 ## Acknowledgements
 
@@ -23,11 +23,13 @@ This project is built on other people's work:
 
 ## Games
 
-Games tested on Mac or iPhone. See the [per-game notes](dm/games/README.md#games) for tested platforms, progress and known issues:
+These games are tested on a Mac or an iPhone. The [per-game notes](dm/games/README.md#games) say which, how far each was tested and what its known issues are.
 
-Needs iOS / iPadOS 26 or later on an iPhone 15 Pro or newer (A17 Pro chip or later) or an iPad with an M1 chip or later: the games' textures are BC-compressed, and older iPhones can't read that format. Other games aren't supported yet. For them the script writes a survey and still tries its best to pack an IPA, guessing the game's settings; such an IPA may not start.
+**On iPhone and iPad** they need iOS / iPadOS 26 or later, on an iPhone 15 Pro or newer (A17 Pro chip or later) or an iPad with an M1 chip or later. Older iPhones can't read the games' texture format. **On the Mac** they need Apple silicon.
 
-Under each game: the IPA's size, and "60 fps with 1.2.0" where the game runs at 60 fps (30 on the Switch) with that update.
+**Other games** aren't supported yet. The script still tries: it guesses the game's settings and packs an IPA, which may not start, and it writes a report on the game (`survey.md`) for anyone who wants to port it.
+
+Under each game is the size of its IPA. "60 fps with 1.2.0" means the game runs at 60 fps with that update, where the Switch runs it at 30.
 
 <!-- gallery: written by dm/tools/docs_gallery.py from docs/images/gallery.tsv; change the table, then run it -->
 <table>
@@ -176,9 +178,9 @@ Under each game: the IPA's size, and "60 fps with 1.2.0" where the game runs at 
 
 ## Pack an IPA
 
-Prefer a graphical interface to the command line? **[NX2Apple](https://github.com/LNPANDY/NX2Apple)** is a community fork with a macOS app that runs this whole pipeline for you and packs the game files into a sharded RomFS archive for a slimmer IPA. It is a separate project that follows this one; the steps below are nxnative's own command-line way.
+Prefer a graphical interface? **[NX2Apple](https://github.com/LNPANDY/NX2Apple)**, the community Mac app from the tip at the top, runs these steps for you and can pack slimmer IPAs. The steps below are nxnative's own command-line way.
 
-**1. Get nxnative and its tools** (once, on a Mac with macOS 26.6 or later, [Xcode](https://apps.apple.com/app/xcode/id497799835) 27.1 and [Homebrew](https://brew.sh)). The shaders are tested with Xcode 27.1's Metal compiler. The script stops on another version and explains how to install the tested toolchain. Corruption reported with another compiler in [#242](https://github.com/seedds/nxnative/issues/242) is still under investigation.
+**1. Get nxnative and its tools** (once, on a Mac with macOS 26.6 or later, [Xcode](https://apps.apple.com/app/xcode/id497799835) 27.1 and [Homebrew](https://brew.sh)). The graphics are tested with Xcode 27.1's Metal compiler, so the script checks for it and, if it finds another version, stops and says how to install the right one. [#242](https://github.com/seedds/nxnative/issues/242) reports broken graphics with another compiler; the cause is still being investigated.
 
 ```
 xcodebuild -downloadComponent MetalToolchain
@@ -188,7 +190,7 @@ brew install --cask dotnet-sdk
 python3 -m pip install lz4 capstone fonttools "backports.zstd; python_version < '3.14'"
 ```
 
-Use Python 3.12 or newer. Extraction writes one `RomFS.img` directly; the build reads it and bundles it as `romfs.img` in the IPA. The app reads the image in place, so neither the Mac build nor the iPhone expands it into a RomFS folder.
+Use Python 3.12 or newer. The game's files stay in one image file (`RomFS.img`), in the build folder and in the app; nothing unpacks them into a folder.
 
 **2. Put one game's NSPs in a folder**: the base game (an NSP, or an XCI cartridge dump), plus its update and DLC if you have them:
 
@@ -200,7 +202,7 @@ Use Python 3.12 or newer. Extraction writes one `RomFS.img` directly; the build 
 
 NSZ and XCZ files (compressed NSPs and XCIs) work too: the script converts them once with [nsz](https://github.com/nicoboss/nsz) (`python3 -m pip install nsz`) and keeps the NSPs in `<title ID>_build/nsp/`, which takes their full size on disk.
 
-Any version works, with or without an update: the script packs the newest version in the folder. DLC is optional too: the DLC in the folder is packed, and without it the game sees none, as on a Switch without it. Each game was tested on one version (an update named in the table above is the one its 60 fps needs). With another version the script builds the game with that version's own shaders and says that the version was not tested; fixes made for the tested version's code, such as the 60 fps ones, don't apply to it.
+Any version works, with or without an update: the script packs the newest version in the folder. DLC is optional too: the game gets the DLC that is in the folder, and without any it sees none, as on a Switch. Each game was tested on one version; where the gallery names an update, its 60 fps needs that one. Another version still builds, with its own shaders, and the script says it was not tested. Fixes made for the tested version, such as the 60 fps ones, don't apply to it.
 
 **3. Run the script:**
 
@@ -208,35 +210,67 @@ Any version works, with or without an update: the script packs the newest versio
 python3 scripts/build_ipa_from_nsp.py ~/Games/MarioWonder -k ~/keys/prod.keys
 ```
 
-The IPA appears in the same folder (here `~/Games/MarioWonder/SMBWMobile.ipa`). The first build takes 30–60 minutes. A later one reuses every step whose inputs did not change, so after a pull that changes only the host it takes about a minute. The small `.idx` file beside the IPA (`.app.key` beside a Mac app) records what was packed; keep it for the next build. You need free disk space of about twice the NSPs' size plus 10 GB. Options such as `-o` (output path) and `--app-name` are listed by `-h`.
+The IPA appears in the same folder (here `~/Games/MarioWonder/SMBWMobile.ipa`).
 
-**4. Install** the IPA with your sideloading tool (AltStore, Sideloadly, LiveContainer, …). The app gets the game's name, icon and version (the update's version, for example 1.2.1 for Mario Wonder; the base game's when there is no update). Sign it with the **Increased Memory Limit** capability (`com.apple.developer.kernel.increased-memory-limit`) if your tool can: without it iOS gives the app about 3.4 GB and closes the bigger games (Hyrule Warriors: Age of Calamity and Hades II use more, Breath of the Wild and Cuphead come close); with it a recent iPhone gives about 6 GB.
+- **Time:** the first build takes 30–60 minutes. Later builds redo only what changed: after a pull that changes only the host (nxnative's stand-in for the Switch's system), about a minute. Keep the small `.idx` file beside the IPA (`.app.key` beside a Mac app); it records what was packed.
+- **Disk space:** about twice the size of the NSPs, plus 10 GB.
+- **Options** such as `-o` (output path) and `--app-name`: `-h` lists them all.
 
-To play on a Mac with Apple silicon instead, `--platform mac-app` packs a Mac app of the game that you open from Finder ([A Mac app](docs/development.md#a-mac-app)). It shows the game's settings in a window before the game starts ([The Mac settings window](docs/settings.md#the-mac-settings-window)).
+**4. Install** the IPA with your sideloading tool (AltStore, Sideloadly, LiveContainer, …). The app gets the game's name, icon and version (the update's version, for example 1.2.1 for Mario Wonder; the base game's when there is no update). If your tool can, turn on the **Increased Memory Limit** capability when signing (its ID is `com.apple.developer.kernel.increased-memory-limit`). Without it, iOS gives the app about 3.4 GB and closes the bigger games: Hyrule Warriors: Age of Calamity and Hades II need more, and Breath of the Wild and Cuphead come close. With it, a recent iPhone gives about 6 GB.
+
+To play on a Mac with Apple silicon instead, `--platform mac-app` packs a Mac app of the game that you open from Finder. It appears in the NSP folder as `<game name>.app`; `-o "/Applications/<game name>.app"` puts it elsewhere. It shows the game's settings in a window before the game starts ([On the Mac](#on-the-mac), [A Mac app](docs/development.md#a-mac-app)).
 
 With an Apple developer account you can instead build and install from Xcode: `--prepare-xcode` makes an Xcode project for the game rather than an IPA ([Build and run on a device with Xcode](docs/development.md#build-and-run-on-a-device-with-xcode)).
 
 ## Play
 
+On every device:
+
+- **Game language** is English by default. Pick another when packing with `--language` (`-l`), by code or by name: `-l ja`, `-l zh-Hans`, `-l French` (`LANGUAGE` in Spyder). It must be one the game has; the script prints the game's languages and stops on one it lacks. To change it without rebuilding, pick another in the settings screen (the settings window on the Mac).
+- **Short stutters** the first time a new scene appears are normal: the app prepares that scene's graphics once and remembers them. On later starts it prepares everything it remembers, and what the game is known to need, before the game begins, showing "Preparing shaders" and a progress bar when that takes more than half a second.
+
+**Motion (gyro).** A controller that supplies gyro data through Apple's controller support (DualSense, DualShock 4) drives the game's motion controls, on the Mac and the iPhone: aiming and tilt puzzles in games that read the controller's motion, such as Breath of the Wild with its Motion Controls option on. Motion follows the controller in docked mode, the default.
+
+- **On the iPhone,** a controller without gyro (Backbone One, Razer Kishi and other controllers the phone mounts in) uses the iPhone's own gyro, as a Switch in handheld. `DM_PHONE_MOTION=0` in `Documents/env.txt` stops the phone's gyro.
+- **On the Mac,** a Switch Pro Controller's gyro is read from its raw reports, because macOS passes on only zeroes. This works with one Pro Controller at a time and is not yet confirmed on hardware ([details](docs/reference/services.md#switch-pro-controller-advertises-motion-but-sends-zeroes)).
+- **Turning it off:** `DM_MOTION=0` in the `env.txt` turns off all motion. If motion misbehaves, pack with `--no-motion` (`MOTION = False` in Spyder) for an app without it; `DM_MOTION=1` in the `env.txt` turns it back on.
+
+### On iPhone and iPad
+
 **Settings.** A screen before the game starts offers what the game supports: frame rate, render scale, docked or handheld mode, game language, the frame-rate counter and rumble. Everything is on one scrollable screen, grouped into **Game**, **Controls** and **Performance**, with menus, sliders and a reset to the settings the game was tested with. Tap **Play** to start; the app remembers your choices. What each setting does: [Settings](docs/settings.md).
 
-**Touch controls.** Tap **2D** / **3D** at the top to switch layouts; the app remembers your choice. Wonder, Engage, Dread, 13 Sentinels, Link's Awakening, Ace Attorney Investigations Collection, Unicorn Overlord, Rhythm Heaven Groove, Octopath Traveler 0, Pokémon Legends: Z-A, Cuphead, Absolum, Blasphemous 2, Brain Memory Training Academy, The Great Ace Attorney Chronicles, STEINS;GATE RE:BOOT, Big Brain Academy: Brain vs. Brain, Patrick's Parabox, Celeste, Raging Loop and Mario vs. Donkey Kong start in 2D, the other games in 3D (STEINS;GATE RE:BOOT's quick save is R3, in the 3D layout). In 3D, the right stick (the camera in most games) is not drawn: swipe on the right third of the screen, starting anywhere off the buttons. In Super Mario Galaxy and Super Mario Galaxy 2, other touches outside the controls move the pointer; in Captain Toad: Treasure Tracker they touch the game's screen (touch blocks, stun enemies), and in Big Brain Academy: Brain vs. Brain too (its menus and activities).
-A connected game controller hides the touch controls and keeps every button.
+**Touch controls.** There are two layouts, 2D and 3D. Tap **2D** / **3D** at the top to switch; the app remembers your choice.
 
-**Rumble.** Game vibration uses the iPhone's haptic engine or a compatible connected controller. Controllers with separate left/right haptic outputs keep those effects separate. The launcher's **Game rumble** and **Rumble strength** settings control it independently of **Touch feedback**. Phone rumble approximates the Switch's effects; physical feel and controller compatibility still need device testing.
+- **Games that start in 2D:** 13 Sentinels: Aegis Rim, Absolum, Ace Attorney Investigations Collection, Big Brain Academy: Brain vs. Brain, Blasphemous 2, Brain Memory Training Academy, Celeste, Cuphead, Fire Emblem Engage, The Great Ace Attorney Chronicles, The Legend of Zelda: Link's Awakening, Mario vs. Donkey Kong, Metroid Dread, Octopath Traveler 0, Patrick's Parabox, Pokémon Legends: Z-A, Raging Loop, Rhythm Heaven Groove, STEINS;GATE RE:BOOT, Super Mario Bros. Wonder and Unicorn Overlord. All other games start in 3D.
+- **The right stick in 3D** (the camera in most games) is not drawn. Swipe on the right third of the screen instead, starting anywhere off the buttons.
+- **Touching the game's own screen:** in Captain Toad: Treasure Tracker, touches outside the controls touch the game's screen (to touch blocks and stun enemies), and in Big Brain Academy: Brain vs. Brain too (its menus and activities). In Super Mario Galaxy and Super Mario Galaxy 2 they move the pointer.
+- **STEINS;GATE RE:BOOT's quick save** is R3, which only the 3D layout has.
+- **A connected game controller** hides the touch controls and keeps every button.
 
-**Motion (gyro).** A controller that supplies gyro data through Apple's controller support (DualSense, DualShock 4) drives the game's motion controls, on the Mac and the iPhone: aiming and tilt puzzles in games that read the controller's motion, such as Breath of the Wild with its Motion Controls option on. A controller without one (Backbone One, Razer Kishi and other controllers the phone mounts in) uses the iPhone's own gyro, as a Switch in handheld. Motion follows the controller in docked mode, the default. `DM_PHONE_MOTION=0` in `Documents/env.txt` stops the phone's gyro, `DM_MOTION=0` all motion. If motion misbehaves, pack with `--no-motion` (`MOTION = False` in Spyder) for an app without it; `DM_MOTION=1` in `Documents/env.txt` turns it back on.
-
-Switch Pro Controller gyro on the Mac still needs the HID support being developed in [PR #296](https://github.com/seedds/nxnative/pull/296).
+**Rumble.** Game vibration uses the iPhone's haptic engine or a compatible connected controller. Controllers with separate left/right haptic outputs keep those effects separate. The launcher's **Game rumble** and **Rumble strength** settings control it independently of **Touch feedback**. Phone rumble is an approximation of the Switch's, and not every controller has been tried.
 
 **Shaking.** Shake the iPhone to shake the controller, in games that read its motion: Super Mario Odyssey's motion moves (such as the cap throw on a shake) need it, and Odyssey only takes them in its default docked mode. A light bump does not count; a sharp flick of the phone does.
 
-- **Game language** is English by default. Pick another when packing with `--language` (`-l`), by code or by name: `-l ja`, `-l zh-Hans`, `-l French` (`LANGUAGE` in Spyder). It must be one the game has; the script prints the game's languages and stops on one it lacks. To change it without rebuilding, pick another on the settings screen.
-- **On the Mac**, a game's app starts with the settings it was tested with. To choose others before it starts (frame rate, console mode, upscaling, …), start it from [NX2Apple](https://github.com/LNPANDY/NX2Apple)'s library, or put lines like `DM_FPS_TARGET=30` in `~/Library/Application Support/nxnative/<title ID>/env.txt`. Its log is `~/Library/Logs/nxnative/<title ID>.log`.
 - **Saves and logs** are in the Files app, under the app's name: `save/` and `log.txt`. When something goes wrong, send `log.txt` (the previous run is `log.prev.txt`).
-- **Short stutters** the first time a new scene appears are normal: the app compiles graphics for it once and remembers them for the next launch. What it remembered, and what the game's list names, is built before the game starts, behind "Preparing shaders" and a progress bar when that takes more than half a second.
-- **Reinstalling:** some sideloading tools give a reinstalled app a new data folder. Copy `save/` and `pso_user.tsv` over from the old one to keep your progress.
-- **Settings in a file:** lines like `DM_OPMODE=0` (handheld mode: lower resolution, higher frame rate) in `Documents/env.txt` win over the settings screen, which then shows them greyed out. `DM_FPS_TARGET=30` keeps Breath of the Wild, Tears of the Kingdom, Octopath Traveler 0 and Octopath Traveler II at their original 30 fps, which saves battery; `DM_PRESENT_INTERVAL=game` does the same for Monster Train 2. `DM_SHOW_FPS=1` shows the frame rate at the top left (`--show-fps` when packing turns it on from the start). `DM_LAUNCHER=0` skips the settings screen.
+- **Reinstalling:** some sideloading tools give a reinstalled app a new data folder. Copy `save/` and `pso_user.tsv` (the graphics the app has learned to prepare) over from the old one, to keep your progress and avoid the first-time stutters again.
+- **Settings in a file:** a line like `DM_OPMODE=0` in `Documents/env.txt` (in the Files app, under the app's name) wins over the settings screen, which then shows that setting greyed out. Fully close and reopen the app after editing the file. Useful lines:
+  - `DM_OPMODE=0`: handheld mode, with a lower resolution and a higher frame rate.
+  - `DM_FPS_TARGET=30`: the original 30 fps in Breath of the Wild, Tears of the Kingdom, Octopath Traveler 0 and Octopath Traveler II, which saves battery. `DM_PRESENT_INTERVAL=game` does the same for Monster Train 2.
+  - `DM_SHOW_FPS=1`: the frame rate at the top left. `--show-fps` when packing turns it on from the start.
+  - `DM_LAUNCHER=0`: skip the settings screen; your saved choices still apply.
+
+  Every variable: [Settings in a file](docs/settings.md#settings-in-a-file).
+
+### On the Mac
+
+The Mac app keeps everything of yours outside the app, so building it again after a `git pull` replaces only the game and keeps your progress.
+
+- **Where things are:** `~/Library/Application Support/nxnative/<title ID>/` holds the save (`save/` and `pso_user.tsv`) and your `env.txt`. The log is `~/Library/Logs/nxnative/<title ID>.log`, and the previous run's is `<title ID>.prev.log`. The title ID is the base game's: the script's first line names it (`game profile: 0100F2C0115B6000` for Tears of the Kingdom), and the [per-game notes](dm/games/README.md#games) list each one.
+- **Settings:** a window before the game starts offers the game's settings, the most used first and the rest under **Advanced settings** ([The Mac settings window](docs/settings.md#the-mac-settings-window)). Click **Play** or press Return; the app remembers your choices, also when a front end such as [NX2Apple](https://github.com/LNPANDY/NX2Apple) starts it. Turn off **Show this window at launch** to start at once; hold Option while the app opens to see the window again.
+- **Settings in a file:** `KEY=VALUE` lines in that `env.txt`, such as `DM_FPS_TARGET=30` or `DM_METAL_HUD=1`, win over the window, which then shows them greyed out. Every variable: [Settings in a file](docs/settings.md#settings-in-a-file).
+- **Fullscreen** (the **Display mode** setting, the green button or ⌃⌘F) gives the most even frames on a 144 or 165 Hz screen: the app runs the screen at 120 Hz, a multiple of 60, until the window leaves fullscreen. In a window on such a screen, frames are shown at uneven intervals.
+- **Keyboard:** WASD is the left stick, the arrow keys the D-pad, J K U I are A B X Y, Q E are L R, Z C are ZL ZR, F G press the sticks, Return is + and Tab is −. Space shakes the controller, and the left mouse button touches the screen. ⌘Q quits.
+- **Controllers:** buttons go by position, as on the iPhone (right A, bottom B, top X, left Y). Each controller is a player of its own for local co-op: the first one connected is player 1, together with the keyboard.
 
 ## Known issues
 
