@@ -1802,7 +1802,7 @@ def unzs(path):
     """A zstd file decompressed: frames without a dictionary through the zstd command as before, frames that name one with that dictionary from ZDICTS"""
     d = open(path, 'rb').read()
     did = zs_dict_id(d)
-    if not did: return subprocess.run(['zstd', '-d', '-c', '-q', path], capture_output=True, check=True).stdout
+    if not did: return subprocess.run(['zstd', '-d', '-c', '-q'], input=d, capture_output=True, check=True).stdout   # through stdin: path may be a file inside a RomFS image, which zstd cannot open
     return unzs_dict(d, did, path)
 
 def frame_size(f):

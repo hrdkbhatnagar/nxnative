@@ -77,6 +77,14 @@ class ReadImage(unittest.TestCase):
         (self.src / 'new').write_text('new entry'); romfs_image.pack(self.src, self.image)
         self.assertEqual((self.virtual / 'new').read_text(), 'new entry')
 
+    @unittest.skipUnless(shutil.which('zstd'), 'needs the zstd command')
+    def test_shader_split_decompresses_zstd_files_inside_an_image(self):
+        with patch.dict(os.environ, DM_GAME='0100F2C0115B6000'):
+            import shader_split
+        z = subprocess.run(['zstd', '-c', '-q'], input=self.data, capture_output=True, check=True).stdout
+        (self.src / 'data/shader.zs').write_bytes(z); romfs_image.pack(self.src, self.image)
+        self.assertEqual(shader_split.unzs(str(self.virtual / 'data/shader.zs')), self.data)
+
     def test_ipa_packer_keeps_image_as_one_file_and_reuses_it(self):
         out = self.root / 'game.ipa'
         cmd = [sys.executable, str(REPO / 'dm/ios/tools/pack_ipa.py'), str(out), f'Payload/Game.app/romfs.img={self.image}']
