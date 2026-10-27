@@ -1,6 +1,6 @@
 # nxnative
 
-Play your own Nintendo Switch games natively on iPhone and iPad. Bring your game (its NSP files) and your `prod.keys`; one script turns them into an IPA that you sideload.
+Play your own Nintendo Switch games natively on iPhone, iPad and Mac. Bring your game (its NSP files) and your `prod.keys`; one script turns them into an IPA that you sideload, or into a Mac app for a Mac with Apple silicon.
 
 It is not an emulator: the game's own code runs directly on the Apple chip, with Switch graphics rebuilt on Metal. Nothing from any game is in this repository, and the project is not affiliated with Nintendo or any game publisher.
 
@@ -213,8 +213,13 @@ With an Apple developer account you can instead build and install from Xcode: `-
 
 **Settings.** A screen before the game starts offers what the game supports: frame rate, render scale, docked or handheld mode, game language, the frame-rate counter and rumble. Everything is on one scrollable screen, grouped into **Game**, **Controls** and **Performance**, with menus, sliders and a reset to the settings the game was tested with. Tap **Play** to start; the app remembers your choices. What each setting does: [Settings](docs/settings.md).
 
-**Touch controls.** Tap **2D** / **3D** at the top to switch layouts; the app remembers your choice. Wonder, Engage, Dread, 13 Sentinels, Link's Awakening, Ace Attorney Investigations Collection, Unicorn Overlord, Rhythm Heaven Groove, Octopath Traveler 0, Pokémon Legends: Z-A, Cuphead, Absolum, Brain Memory Training Academy, The Great Ace Attorney Chronicles, STEINS;GATE RE:BOOT, Big Brain Academy: Brain vs. Brain, Patrick's Parabox, Celeste, Raging Loop and Mario vs. Donkey Kong start in 2D, the other games in 3D (STEINS;GATE RE:BOOT's quick save is R3, in the 3D layout). In 3D, the right stick (the camera in most games) is not drawn: swipe on the right third of the screen, starting anywhere off the buttons. In Super Mario Galaxy and Super Mario Galaxy 2, other touches outside the controls move the pointer; in Captain Toad: Treasure Tracker they touch the game's screen (touch blocks, stun enemies), and in Big Brain Academy: Brain vs. Brain too (its menus and activities).
-A connected game controller hides the touch controls and keeps every button.
+**Touch controls.** There are two layouts, 2D and 3D. Tap **2D** / **3D** at the top to switch; the app remembers your choice.
+
+- **Games that start in 2D:** 13 Sentinels: Aegis Rim, Absolum, Ace Attorney Investigations Collection, Big Brain Academy: Brain vs. Brain, Brain Memory Training Academy, Celeste, Cuphead, Fire Emblem Engage, The Great Ace Attorney Chronicles, The Legend of Zelda: Link's Awakening, Mario vs. Donkey Kong, Metroid Dread, Octopath Traveler 0, Patrick's Parabox, Pokémon Legends: Z-A, Raging Loop, Rhythm Heaven Groove, STEINS;GATE RE:BOOT, Super Mario Bros. Wonder and Unicorn Overlord. All other games start in 3D.
+- **The right stick in 3D** (the camera in most games) is not drawn. Swipe on the right third of the screen instead, starting anywhere off the buttons.
+- **Touching the game's own screen:** in Captain Toad: Treasure Tracker, touches outside the controls touch the game's screen (to touch blocks and stun enemies), and in Big Brain Academy: Brain vs. Brain too (its menus and activities). In Super Mario Galaxy and Super Mario Galaxy 2 they move the pointer.
+- **STEINS;GATE RE:BOOT's quick save** is R3, which only the 3D layout has.
+- **A connected game controller** hides the touch controls and keeps every button.
 
 **Rumble.** Game vibration uses the iPhone's haptic engine or a compatible connected controller. Controllers with separate left/right haptic outputs keep those effects separate. The launcher's **Game rumble** and **Rumble strength** settings control it independently of **Touch feedback**. Phone rumble approximates the Switch's effects; physical feel and controller compatibility still need device testing.
 
